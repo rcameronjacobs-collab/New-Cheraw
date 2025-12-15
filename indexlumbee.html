@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Neo-Cheraw (Saura) Sentence & Pronunciation Trainer</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#f6f7f9}
+    header{padding:16px;background:#111827;color:#fff}
+    main{padding:16px;max-width:1100px;margin:0 auto}
+    .row{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:980px){.row{grid-template-columns:1.2fr .8fr}}
+    .card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 20px rgba(0,0,0,.06)}
+    .label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280}
+    .big{font-size:26px;font-weight:780;margin:8px 0}
+    .muted{color:#6b7280}
+    .small{font-size:13px}
+    select,input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #e5e7eb}
+    button{border:0;border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700}
+    button.primary{background:#111827;color:#fff}
+    button.secondary{background:#e5e7eb}
+    button.warn{background:#fee2e2}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .hr{height:1px;background:#e5e7eb;margin:12px 0}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace}
+    .syllables{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .syll{padding:8px 10px;border-radius:999px;background:#f3f4f6;border:1px solid #e5e7eb}
+    .toggleRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .toggle{display:flex;gap:8px;align-items:center}
+    .toggle input{width:18px;height:18px}
+    .range{width:100%}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff}
+    .sentence{padding:12px;border-radius:14px;border:1px solid #e5e7eb;background:#fafafa}
+    .chipRow{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{padding:8px 10px;border-radius:999px;background:#fff;border:1px solid #e5e7eb}
+    .warnBox{background:#fff7ed;border:1px solid #fed7aa;padding:10px 12px;border-radius:14px}
+    audio{width:100%}
+  </style>
+</head>
+<body>
+<header>
+  <div style="max-width:1100px;margin:0 auto;">
+    <div style="font-weight:900;">Neo-Cheraw (Saura) — Sentence & Pronunciation Trainer</div>
+    <div class="small" style="opacity:.9;">
+      A teaching reconstruction using Siouan-typical structure + standardized pronunciation guides (not an attested historic audio record).
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="row">
+    <section class="card">
+      <div class="warnBox small">
+        <b>Accuracy note:</b> Cheraw/Saura is not fully documented. This app teaches a <b>constructed “Neo-Cheraw”</b> using Siouan-like patterns and a consistent phonetic system.
+        If you later add community-approved recordings/orthography, you can replace TTS and adjust grammar rules.
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="label">Voice / Options</div>
+      <div class="grid3" style="margin-top:8px;">
+        <div>
+          <select id="voice"></select>
+        </div>
+        <div>
+          <div class="label">Speech rate</div>
+          <input id="rate" class="range" type="range" min="0.6" max="1.1" step="0.05" value="0.85"/>
+          <div class="small muted">Rate: <span id="rateLabel">0.85</span></div>
+        </div>
+        <div>
+          <div class="label">Slow-mode pause (ms)</div>
+          <input id="pauseMs" class="range" type="range" min="150" max="1200" step="50" value="450"/>
+          <div class="small muted"><span id="pauseLabel">450</span> ms</div>
+        </div>
+      </div>
+
+      <div class="toggleRow" style="margin-top:10px;">
+        <div class="toggle">
+          <input type="checkbox" id="showIpa" checked/>
+          <label for="showIpa" class="small">Show IPA</label>
+        </div>
+        <div class="toggle">
+          <input type="checkbox" id="showGloss" checked/>
+          <label for="showGloss" class="small">Show gloss</label>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="label">Build a sentence (Siouan-style templates)</div>
+      <div class="grid2" style="margin-top:8px;">
+        <div>
+          <div class="label">Template</div>
+          <select id="template"></select>
+        </div>
+        <div>
+          <div class="label">Search words</div>
+          <input id="search" placeholder="Search: bear, eat, water, in, my..." />
+        </div>
+      </div>
+
+      <div class="grid3" style="margin-top:10px;">
+        <div>
+          <div class="label">Subject (S)</div>
+          <select id="subj"></select>
+        </div>
+        <div>
+          <div class="label">Object (O)</div>
+          <select id="obj"></select>
+        </div>
+        <div>
+          <div class="label">Verb (V)</div>
+          <select id="verb"></select>
+        </div>
+      </div>
+
+      <div class="grid3" style="margin-top:10px;">
+        <div>
+          <div class="label">Modifier (Adj/Num)</div>
+          <select id="mod"></select>
+        </div>
+        <div>
+          <div class="label">Relator (postposition)</div>
+          <select id="rel"></select>
+        </div>
+        <div>
+          <div class="label">Possessor</div>
+          <select id="poss"></select>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="pill" id="orderPill">Order: S O V</div>
+      <div class="label">Neo-Cheraw sentence</div>
+      <div class="sentence">
+        <div class="big" id="sentenceText">—</div>
+        <div class="small muted" id="glossText"></div>
+      </div>
+
+      <div id="ipaWrap" style="margin-top:10px;">
+        <div class="label">IPA (approx.)</div>
+        <div class="big mono" id="sentenceIpa">—</div>
+      </div>
+
+      <div class="label" style="margin-top:12px;">Tap a word</div>
+      <div class="chipRow" id="wordChips"></div>
+
+      <div class="label" style="margin-top:12px;">Tap a syllable (current word)</div>
+      <div class="syllables" id="syllables"></div>
+
+      <div class="btns" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+        <button class="secondary" id="random">🎲 Random</button>
+        <button class="primary" id="speakSentence">🔊 Speak sentence</button>
+        <button class="primary" id="slowSentence">🐢 Slow sentence</button>
+        <button class="secondary" id="stopTts">⏹ Stop</button>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="label">Practice recorder</div>
+      <div class="muted small">Record yourself, then compare against word-by-word / syllable slow mode.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        <button class="primary" id="rec">● Record</button>
+        <button class="warn" id="stopRec" disabled>■ Stop</button>
+      </div>
+      <audio id="playback" controls></audio>
+    </section>
+
+    <aside class="card">
+      <div class="label">How the “Siouan structure” works here</div>
+      <ul class="small">
+        <li><b>Default order:</b> Subject–Object–Verb (SOV).</li>
+        <li><b>Relators:</b> “in/at/with/from” behave like <b>postpositions</b> (they come after the noun phrase).</li>
+        <li><b>Modifiers:</b> adjectives/numbers attach to the noun phrase (kept simple in templates).</li>
+        <li>This is a <b>teaching grammar</b>, not a full historic reconstruction.</li>
+      </ul>
+
+      <div class="hr"></div>
+      <div class="label">Expand the language</div>
+      <div class="small muted">
+        Add new words in the DATA arrays (nouns/verbs/relators/modifiers). Each entry supports:
+        <div class="mono small" style="margin-top:8px;">
+          form, pron (hyphen syllables), ipa, gloss
+        </div>
+        If you later have real audio files, you can replace TTS per word.
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+/**
+ * DATA MODEL (Neo-Cheraw teaching reconstruction)
+ * - form: the written form you want displayed
+ * - pron: syllabified guide using hyphens (tap syllables)
+ * - ipa: optional IPA string
+ * - gloss: English gloss / grammar label
+ *
+ * Note: These are placeholders built from the Catawba-derived lists + consistent “Neo-Cheraw” style.
+ * Replace/adjust with community-approved Saura/Cheraw forms when available.
+ */
+
+const NOUNS = [
+  { id:"I",     form:"mi",      pron:"mee",          ipa:"/mi/",        gloss:"I / me" },
+  { id:"you",   form:"yi",      pron:"yee",          ipa:"/ji/",        gloss:"you" },
+  { id:"man",   form:"wavake",  pron:"wah-ah-keh",   ipa:"/wa a kɛ/",    gloss:"man" },
+  { id:"woman", form:"mehava",  pron:"me-hah-ah",    ipa:"/mɛ ha a/",    gloss:"woman" },
+  { id:"boy",   form:"yavqavha",pron:"yah-chah-hah", ipa:"/ja t͡ʃa ha/", gloss:"boy" },
+  { id:"bear",  form:"murnte",  pron:"mewn-teh",     ipa:"/mɯn tɛ/",     gloss:"bear" },
+  { id:"deer",  form:"wita",    pron:"wee-tah",      ipa:"/wi ta/",      gloss:"deer" },
+  { id:"fish",  form:"yiyi",    pron:"yee-ee",       ipa:"/ji ji/",      gloss:"fish" },
+  { id:"water", form:"(water)", pron:"wah-ter",      ipa:"—",            gloss:"water (placeholder)" },
+  { id:"fire",  form:"inide",   pron:"een-ee-deh",   ipa:"/i ni dɛ/",    gloss:"fire" },
+  { id:"food",  form:"aʔiya",   pron:"ah-ee-yah",    ipa:"/a i ja/",     gloss:"food" },
+  { id:"basket",form:"tavaska", pron:"tah-ah-shkah", ipa:"/ta a ʃka/",    gloss:"basket" },
+  { id:"boat",  form:"wavte",   pron:"wah-teh",      ipa:"/wa tɛ/",      gloss:"boat" },
+];
+
+const POSSESSORS = [
+  { id:"none", form:"", pron:"", ipa:"", gloss:"(none)" },
+  { id:"my",   form:"mi-",  pron:"mee",  ipa:"/mi/",  gloss:"my (prefix-like)" },
+  { id:"your", form:"yi-",  pron:"yee",  ipa:"/ji/",  gloss:"your (prefix-like)" },
+];
+
+const MODIFIERS = [
+  { id:"none", form:"", pron:"", ipa:"", gloss:"(none)" },
+  { id:"red",   form:"ạʔurvte", pron:"ah-chew-teh", ipa:"/ɑ t͡ʃu tɛ/", gloss:"red" },
+  { id:"black", form:"ạsipe",   pron:"ah-shee-peh", ipa:"/ɑ ʃi pɛ/",   gloss:"black" },
+  { id:"white", form:"ạsane",   pron:"ah-shah-neh", ipa:"/ɑ ʃa nɛ/",   gloss:"white" },
+  { id:"one",   form:"noːsa",   pron:"noh-shah",    ipa:"/noː ʃa/",    gloss:"one" },
+  { id:"two",   form:"nurpa",   pron:"new-pah",     ipa:"/nu pɑ/",     gloss:"two" },
+  { id:"three", form:"lane",    pron:"lah-neh",     ipa:"/la nɛ/",     gloss:"three" },
+];
+
+const RELATORS = [
+  { id:"none", form:"", pron:"", ipa:"", gloss:"(none)" },
+  // “Postpositions”: placed AFTER the noun phrase in our templates.
+  { id:"in",    form:"-in",   pron:"in",   ipa:"/in/", gloss:"in/at (postposition placeholder)" },
+  { id:"with",  form:"-with", pron:"with", ipa:"/wɪθ/",gloss:"with (postposition placeholder)" },
+  { id:"from",  form:"-from", pron:"from", ipa:"/frʌm/",gloss:"from (postposition placeholder)" },
+];
+
+const VERBS = [
+  // In Siouan languages, verbs often carry person/number marking; here we keep it simple (teaching).
+  { id:"eat",   form:"(eat)",   pron:"eet",     ipa:"—", gloss:"eat (placeholder)" },
+  { id:"see",   form:"(see)",   pron:"see",     ipa:"—", gloss:"see (placeholder)" },
+  { id:"have",  form:"(have)",  pron:"hav",     ipa:"—", gloss:"have (placeholder)" },
+  { id:"go",    form:"(go)",    pron:"goh",     ipa:"—", gloss:"go (placeholder)" },
+];
+
+/**
+ * TEMPLATES (Siouan-typical teaching patterns)
+ * We keep these intentionally simple and consistent.
+ */
+const TEMPLATES = [
+  {
+    id:"sov_basic",
+    name:"Basic (S O V)",
+    order:"S O V",
+    build: (S,O,V,MOD,REL,POS) => {
+      const NP = nounPhrase(O, MOD, REL, POS);
+      return {
+        sentence: [S.form, NP, V.form].filter(Boolean).join(" "),
+        pron:     [S.pron, NP_pron(O,MOD,REL,POS), V.pron].filter(Boolean).join(" | "),
+        ipa:      [S.ipa, NP_ipa(O,MOD,REL,POS), V.ipa].filter(Boolean).join(" "),
+        gloss:    [S.gloss, NP_gloss(O,MOD,REL,POS), V.gloss].filter(Boolean).join(" • ")
+      };
+    }
+  },
+  {
+    id:"topic_comment",
+    name:"Topic-comment (O, S V)",
+    order:"O , S V",
+    build: (S,O,V,MOD,REL,POS) => {
+      const NP = nounPhrase(O, MOD, REL, POS);
+      return {
+        sentence: [NP + ",", S.form, V.form].filter(Boolean).join(" "),
+        pron:     [NP_pron(O,MOD,REL,POS) + " |", S.pron, V.pron].filter(Boolean).join(" "),
+        ipa:      [NP_ipa(O,MOD,REL,POS), S.ipa, V.ipa].filter(Boolean).join(" "),
+        gloss:    [NP_gloss(O,MOD,REL,POS), S.gloss, V.gloss].filter(Boolean).join(" • ")
+      };
+    }
+  },
+  {
+    id:"possessed_object",
+    name:"Possessed object (S [POSS+O] V)",
+    order:"S POSS+O V",
+    build: (S,O,V,MOD,REL,POS) => {
+      const NP = nounPhrase(O, MOD, REL, POS, true);
+      return {
+        sentence: [S.form, NP, V.form].filter(Boolean).join(" "),
+        pron:     [S.pron, NP_pron(O,MOD,REL,POS,true), V.pron].filter(Boolean).join(" | "),
+        ipa:      [S.ipa, NP_ipa(O,MOD,REL,POS,true), V.ipa].filter(Boolean).join(" "),
+        gloss:    [S.gloss, NP_gloss(O,MOD,REL,POS,true), V.gloss].filter(Boolean).join(" • ")
+      };
+    }
+  }
+];
+
+// ===== Phrase helpers =====
+function nounPhrase(N, MOD, REL, POS, forcePossessed=false){
+  // Teaching choice:
+  // - Possessor prefix-like marker (POS + N)
+  // - Modifier can appear before the noun (simple) or can be treated as a separate word.
+  // - Relator is postpositional suffix-like marker after the noun phrase.
+  const poss = (forcePossessed ? POS.form : (POS.id !== "none" ? POS.form : ""));
+  const mod  = MOD.id !== "none" ? MOD.form : "";
+  const base = [mod, (poss ? poss + N.form : N.form)].filter(Boolean).join(" ");
+  const rel  = REL.id !== "none" ? REL.form : "";
+  return [base, rel].filter(Boolean).join("");
+}
+
+function NP_pron(N,MOD,REL,POS,forcePossessed=false){
+  const poss = (forcePossessed ? POS.pron : (POS.id !== "none" ? POS.pron : ""));
+  const mod  = MOD.id !== "none" ? MOD.pron : "";
+  const base = [mod, (poss ? poss + " " + N.pron : N.pron)].filter(Boolean).join(" ");
+  const rel  = REL.id !== "none" ? REL.pron : "";
+  return [base, rel].filter(Boolean).join(" ");
+}
+function NP_ipa(N,MOD,REL,POS,forcePossessed=false){
+  const poss = (forcePossessed ? POS.ipa : (POS.id !== "none" ? POS.ipa : ""));
+  const mod  = MOD.id !== "none" ? MOD.ipa : "";
+  const base = [mod, (poss ? poss + " " + N.ipa : N.ipa)].filter(Boolean).join(" ");
+  const rel  = REL.id !== "none" ? REL.ipa : "";
+  return [base, rel].filter(Boolean).join(" ");
+}
+function NP_gloss(N,MOD,REL,POS,forcePossessed=false){
+  const poss = (forcePossessed ? POS.gloss : (POS.id !== "none" ? POS.gloss : ""));
+  const mod  = MOD.id !== "none" ? MOD.gloss : "";
+  const base = [mod, (poss ? poss + " " + N.gloss : N.gloss)].filter(Boolean).join(" ");
+  const rel  = REL.id !== "none" ? REL.gloss : "";
+  return [base, rel].filter(Boolean).join(" + ");
+}
+
+// ===== UI wiring =====
+const el = (id)=>document.getElementById(id);
+const voiceSel = el("voice");
+const rate = el("rate");
+const rateLabel = el("rateLabel");
+const pauseMs = el("pauseMs");
+const pauseLabel = el("pauseLabel");
+const showIpa = el("showIpa");
+const showGloss = el("showGloss");
+
+rateLabel.textContent = rate.value;
+pauseLabel.textContent = pauseMs.value;
+rate.oninput = ()=> rateLabel.textContent = rate.value;
+pauseMs.oninput = ()=> pauseLabel.textContent = pauseMs.value;
+
+let voices = [];
+function loadVoices(){
+  voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+  voiceSel.innerHTML = "";
+  if (!voices.length) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "No voices available";
+    voiceSel.appendChild(opt);
+    return;
+  }
+  const preferred = voices.slice().sort((a,b)=>{
+    const ae = (a.lang||"").toLowerCase().startsWith("en") ? 0 : 1;
+    const be = (b.lang||"").toLowerCase().startsWith("en") ? 0 : 1;
+    return ae-be;
+  });
+  preferred.forEach(v=>{
+    const opt = document.createElement("option");
+    opt.value = v.name;
+    opt.textContent = `${v.name} (${v.lang})`;
+    voiceSel.appendChild(opt);
+  });
+}
+if ("speechSynthesis" in window) {
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function speakText(text){
+  if (!("speechSynthesis" in window)) return alert("Speech synthesis not supported.");
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = parseFloat(rate.value);
+  const pick = voices.find(v=>v.name===voiceSel.value);
+  if (pick) u.voice = pick;
+  speechSynthesis.speak(u);
+}
+function stopTts(){ if ("speechSynthesis" in window) speechSynthesis.cancel(); }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function waitSpeechEnd(){
+  return new Promise(resolve=>{
+    const check=()=>{
+      if (!speechSynthesis.speaking && !speechSynthesis.pending) return resolve();
+      setTimeout(check,30);
+    };
+    check();
+  });
+}
+
+function splitSyllables(pron){
+  // pron uses hyphens; allow multi-word: split words then hyphen-split each word
+  // returns array of {type:"word"|"syll", text:string}
+  return pron.split(/\s+/).filter(Boolean).flatMap(w=>{
+    if (w === "|" ) return [];
+    return w.split("-").map(s=>s.trim()).filter(Boolean);
+  });
+}
+
+// Select elements
+const templateSel = el("template");
+const subjSel = el("subj");
+const objSel = el("obj");
+const verbSel = el("verb");
+const modSel = el("mod");
+const relSel = el("rel");
+const possSel = el("poss");
+const search = el("search");
+
+let currentWordForSyllables = null;
+
+function fillSelect(sel, items, labelFn){
+  sel.innerHTML = "";
+  items.forEach(it=>{
+    const opt = document.createElement("option");
+    opt.value = it.id;
+    opt.textContent = labelFn(it);
+    sel.appendChild(opt);
+  });
+}
+function byId(arr,id){ return arr.find(x=>x.id===id) || arr[0]; }
+
+function init(){
+  fillSelect(templateSel, TEMPLATES, t=>t.name);
+  fillSelect(subjSel, NOUNS, n=>`${n.form} — ${n.gloss}`);
+  fillSelect(objSel, NOUNS, n=>`${n.form} — ${n.gloss}`);
+  fillSelect(verbSel, VERBS, v=>`${v.form} — ${v.gloss}`);
+  fillSelect(modSel, MODIFIERS, m=> m.id==="none" ? "(none)" : `${m.form} — ${m.gloss}`);
+  fillSelect(relSel, RELATORS, r=> r.id==="none" ? "(none)" : `${r.form} — ${r.gloss}`);
+  fillSelect(possSel, POSSESSORS, p=> p.id==="none" ? "(none)" : `${p.form} — ${p.gloss}`);
+  render();
+}
+function render(){
+  const T = byId(TEMPLATES, templateSel.value);
+  const S = byId(NOUNS, subjSel.value);
+  const O = byId(NOUNS, objSel.value);
+  const V = byId(VERBS, verbSel.value);
+  const MOD = byId(MODIFIERS, modSel.value);
+  const REL = byId(RELATORS, relSel.value);
+  const POS = byId(POSSESSORS, possSel.value);
+
+  el("orderPill").textContent = `Order: ${T.order}`;
+
+  const built = T.build(S,O,V,MOD,REL,POS);
+
+  el("sentenceText").textContent = built.sentence || "—";
+  el("glossText").textContent = showGloss.checked ? (built.gloss || "") : "";
+  el("ipaWrap").style.display = showIpa.checked ? "block" : "none";
+  el("sentenceIpa").textContent = (built.ipa && built.ipa.trim()) ? built.ipa : "—";
+
+  // Word chips (tap to speak the word and load syllables)
+  const chips = el("wordChips");
+  chips.innerHTML = "";
+  const words = collectWordsForChips(S,O,V,MOD,REL,POS,T);
+  words.forEach(w=>{
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = w.form || w.label;
+    b.onclick = () => {
+      currentWordForSyllables = w;
+      speakText((w.pron || w.form || "").replaceAll("-", " "));
+      renderSyllables(w.pron || "");
+    };
+    chips.appendChild(b);
+  });
+
+  // Default syllable panel: show object NP (or first available)
+  currentWordForSyllables = currentWordForSyllables || words.find(x=>x.pron) || words[0] || null;
+  renderSyllables((currentWordForSyllables && currentWordForSyllables.pron) ? currentWordForSyllables.pron : "");
+}
+
+function collectWordsForChips(S,O,V,MOD,REL,POS,T){
+  // Return a rough list of components used in the template.
+  // We keep it simple: include modifier (if any), possessor (if any), object noun, relator (if any), subject, verb.
+  const arr = [];
+  const MODx = byId(MODIFIERS, modSel.value);
+  const RELx = byId(RELAY = RELATORS, relSel.value);
+  const POSx = byId(POSSESSORS, possSel.value);
+
+  if (MODx.id !== "none") arr.push(MODx);
+  if (POSx.id !== "none") arr.push(POSx);
+  arr.push(O);
+  if (RELx.id !== "none") arr.push(RELx);
+  arr.push(S);
+  arr.push(V);
+  // Deduplicate by id
+  const seen = new Set();
+  return arr.filter(x=>{
+    const key = x.id || x.form;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function renderSyllables(pron){
+  const wrap = el("syllables");
+  wrap.innerHTML = "";
+  const sylls = pron ? pron.split(/\s+/).flatMap(w=>w.split("-")).map(s=>s.trim()).filter(Boolean) : [];
+  if (!sylls.length) {
+    const span = document.createElement("div");
+    span.className = "muted small";
+    span.textContent = "No syllables (add a hyphenated pron guide in the dataset).";
+    wrap.appendChild(span);
+    return;
+  }
+  sylls.forEach(sy=>{
+    const b = document.createElement("button");
+    b.className = "syll";
+    b.textContent = sy;
+    b.onclick = ()=> speakText(sy);
+    wrap.appendChild(b);
+  });
+}
+
+// Search filter: narrow dropdowns by English gloss text
+search.oninput = ()=>{
+  const q = search.value.trim().toLowerCase();
+  if (!q) return init(); // reset
+  const filt = (arr)=>arr.filter(x=>(x.gloss||"").toLowerCase().includes(q) || (x.form||"").toLowerCase().includes(q));
+  fillSelect(subjSel, filt(NOUNS), n=>`${n.form} — ${n.gloss}`);
+  fillSelect(objSel, filt(NOUNS), n=>`${n.form} — ${n.gloss}`);
+  fillSelect(verbSel, filt(VERBS), v=>`${v.form} — ${v.gloss}`);
+  fillSelect(modSel, [{id:"none",form:"",pron:"",ipa:"",gloss:"(none)"}].concat(filt(MODIFIERS.filter(m=>m.id!=="none"))),
+            m=> m.id==="none" ? "(none)" : `${m.form} — ${m.gloss}`);
+  fillSelect(relSel, [{id:"none",form:"",pron:"",ipa:"",gloss:"(none)"}].concat(filt(RELATORS.filter(r=>r.id!=="none"))),
+            r=> r.id==="none" ? "(none)" : `${r.form} — ${r.gloss}`);
+  fillSelect(possSel, POSSESSORS, p=> p.id==="none" ? "(none)" : `${p.form} — ${p.gloss}`);
+  render();
+};
+
+templateSel.onchange = render;
+subjSel.onchange = render;
+objSel.onchange = render;
+verbSel.onchange = render;
+modSel.onchange = render;
+relSel.onchange = render;
+possSel.onchange = render;
+showIpa.onchange = render;
+showGloss.onchange = render;
+
+el("stopTts").onclick = stopTts;
+
+el("speakSentence").onclick = ()=>{
+  const sentence = el("sentenceText").textContent;
+  // Speak using the pronunciation guide if we can:
+  // We approximate by speaking the pron guide “word by word” if present in chips, otherwise sentence text.
+  const chips = Array.from(el("wordChips").querySelectorAll("button")).map(b=>b.textContent);
+  speakText(sentence.replaceAll("-", " "));
+};
+
+el("slowSentence").onclick = async ()=>{
+  stopTts();
+  // Slow mode: use the pronunciation guide from chips: concatenate their pron syllables
+  const words = collectWordsForChips(
+    byId(NOUNS,subjSel.value),
+    byId(NOUNS,objSel.value),
+    byId(VERBS,verbSel.value),
+    byId(MODIFIERS,modSel.value),
+    byId(RELAY = RELATORS,relSel.value),
+    byId(POSSESSORS,possSel.value),
+    byId(TEMPLATES,templateSel.value)
+  );
+  const allSylls = words.flatMap(w => (w.pron||"").split(/\s+/).flatMap(x=>x.split("-")).map(s=>s.trim()).filter(Boolean));
+  const pause = parseInt(pauseMs.value,10);
+
+  if (!allSylls.length) return speakText(el("sentenceText").textContent);
+
+  for (const sy of allSylls){
+    speakText(sy);
+    await waitSpeechEnd();
+    await sleep(pause);
+  }
+};
+
+el("random").onclick = ()=>{
+  templateSel.value = TEMPLATES[Math.floor(Math.random()*TEMPLATES.length)].id;
+  subjSel.value = NOUNS[Math.floor(Math.random()*NOUNS.length)].id;
+  objSel.value = NOUNS[Math.floor(Math.random()*NOUNS.length)].id;
+  verbSel.value = VERBS[Math.floor(Math.random()*VERBS.length)].id;
+  modSel.value = MODIFIERS[Math.floor(Math.random()*MODIFIERS.length)].id;
+  relSel.value = RELATORS[Math.floor(Math.random()*RELATORS.length)].id;
+  possSel.value = POSSESSORS[Math.floor(Math.random()*POSSESSORS.length)].id;
+  render();
+};
+
+// Recorder
+let mediaRecorder=null, chunks=[];
+el("rec").onclick = async ()=>{
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    chunks=[];
+    mediaRecorder=new MediaRecorder(stream);
+    mediaRecorder.ondataavailable=e=>chunks.push(e.data);
+    mediaRecorder.onstop=()=>{
+      const blob=new Blob(chunks,{type:"audio/webm"});
+      el("playback").src=URL.createObjectURL(blob);
+    };
+    mediaRecorder.start();
+    el("rec").disabled=true;
+    el("stopRec").disabled=false;
+  }catch(e){
+    alert("Microphone permission is required to record.");
+  }
+};
+el("stopRec").onclick = ()=>{
+  if(mediaRecorder && mediaRecorder.state!=="inactive"){
+    mediaRecorder.stop();
+    el("rec").disabled=false;
+    el("stopRec").disabled=true;
+  }
+};
+
+init();
+</script>
+</body>
+</html>
